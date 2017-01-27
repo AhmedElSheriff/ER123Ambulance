@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "722790888303",
+    "firebase_url": "https://er-123-ambulance.firebaseio.com",
+    "project_id": "er-123-ambulance",
+    "storage_bucket": "er-123-ambulance.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722790888303:android:71a4bd20e83efe3d",
+        "android_client_info": {
+          "package_name": "com.example.android.er123ambulance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "722790888303-4j5s4po6ms7vgph7p2pj3tdf6qhrpn62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdQFL-bx3cK5x22kAnEvcSO92rN8rCAWA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
