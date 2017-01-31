@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.example.android.er123ambulance.callbacks.GetDriverData;
 import com.example.android.er123ambulance.data.Driver;
-import com.example.android.er123ambulance.data.DriverLocation;
 import com.example.android.er123ambulance.firebase.FirebaseHandler;
 import com.example.android.er123ambulance.utilities.Locations;
 import com.example.android.er123ambulance.utilities.OfficeApp;
@@ -30,7 +29,11 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -41,28 +44,31 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GetDriverData{
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GetDriverData {
 
     private GoogleMap mMap;
-    private ProfileDrawerItem mProfile = null;
+    private ProfileDrawerItem mProfile;
     private AccountHeader header;
     private Drawer result;
     private ProgressDialog mProgressDialog;
     private LocationManager mLocationManager;
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private static final int REQUEST_LOCATION = 0x2;
-
-
+    private Driver mDriver;
+    private Marker yourLoc = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toast.makeText(this,"Logged In",Toast.LENGTH_SHORT).show();
 
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("Getting Things Ready");
         mProgressDialog.setCancelable(false);
+
+        mDriver = new Driver();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -71,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setSupportActionBar(toolbar);
         mProfile = new ProfileDrawerItem();
 
-        FirebaseHandler.getDriverInfo(FirebaseAuth.getInstance().getCurrentUser().getEmail(),this);
+        FirebaseHandler.getDriverInfo(FirebaseAuth.getInstance().getCurrentUser().getEmail(), this);
 
 
         header = new AccountHeaderBuilder()
@@ -89,11 +95,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ).withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                if(position == 2)
-                {
+                if (position == 2) {
                     FirebaseAuth.getInstance().signOut();
                     MainActivity.this.finish();
-                    startActivity(new Intent(MainActivity.this,SignIn.class));
+                    startActivity(new Intent(MainActivity.this, SignIn.class));
                 }
                 return false;
             }
@@ -114,28 +119,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         int off = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
         if (off == 0) {
-            Locations.displayLocationSettingsRequest(this,MainActivity.this);
-        }
-        else {
+            Locations.displayLocationSettingsRequest(this, MainActivity.this);
+        } else {
             requestLocation();
         }
 
     }
 
-    private void requestLocation()
-    {
+    private void requestLocation() {
 
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     REQUEST_LOCATION);
             return;
         }
 
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, mLocationListener);
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, mLocationListener);
 
     }
 
@@ -146,8 +149,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     requestLocation();
-                }
-                else
+                } else
                     return;
             }
         }
@@ -184,15 +186,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         UiSettings uiSettings = mMap.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(29.9556449,30.9134569),16.0f));
+
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(29.9556449,30.9134569),16.0f));
     }
 
     @Override
     public void getDriverData(Driver driver) {
 
-        header.addProfiles(new ProfileDrawerItem().withName(driver.getDriverName())
-        .withEmail(driver.getDriverEmail())
-        .withIcon(R.drawable.ahmedelsherif));
+        Log.e("TAGKEY","Inside Get Driver Data");
+        mProfile.withName(driver.getDriverName()).withEmail(driver.getDriverEmail()).withIcon(R.drawable.ahmedelsherif);
+        header.addProfiles(mProfile);
+        mDriver = driver;
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocationManager.removeUpdates(mLocationListener);
+         mLocationListener = null;
     }
 
     LocationListener mLocationListener = new LocationListener() {
@@ -201,11 +229,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onLocationChanged(Location location) {
             Log.e("OnLocationListener","True");
 
-            DriverLocation driverLocation = new DriverLocation();
-            driverLocation.setLatPosition(Double.toString(location.getLatitude()));
-            driverLocation.setLongPosition(Double.toString(location.getLongitude()));
-            FirebaseHandler.sendDriverLocationToBackOffice(driverLocation, FirebaseAuth.getInstance().getCurrentUser().getEmail()
+            BitmapDescriptor patient = BitmapDescriptorFactory.fromResource(R.drawable.patient);
+            LatLng currentLatLng = new LatLng(location.getLatitude(),location.getLongitude());
+            if(yourLoc != null)
+            {
+                yourLoc.remove();
+                yourLoc = null;
+            }
+
+
+            if(yourLoc == null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.0f));
+                yourLoc = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("Me: ")
+                        .icon(patient));
+            }
+            mDriver.setLatPosition(Double.toString(location.getLatitude()));
+            mDriver.setLongPosition(Double.toString(location.getLongitude()));
+            FirebaseHandler.sendDriverLocationToBackOffice(mDriver, FirebaseAuth.getInstance().getCurrentUser().getEmail()
                     , FirebaseDatabase.getInstance(OfficeApp.officeApp(MainActivity.this)));
+
         }
 
         @Override

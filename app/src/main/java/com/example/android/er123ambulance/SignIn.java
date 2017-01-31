@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,29 +36,23 @@ public class SignIn extends AppCompatActivity {
 
         if(FirebaseAuth.getInstance().getCurrentUser() != null)
         {
-            mProgressDialog.show();
-            FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new DriverExistance() {
-                @Override
-                public void onSearchComplete(boolean isFound) {
-                    if(isFound)
-                    {
-                        mProgressDialog.dismiss();
-                        Toast.makeText(SignIn.this,"Logged In",Toast.LENGTH_SHORT).show();
-                        SignIn.this.finish();
-                        startActivity(new Intent(SignIn.this,MainActivity.class));
-                    }
-                    else
-                    {
-                        FirebaseAuth.getInstance().signOut();
-                        mProgressDialog.dismiss();
-                    }
-                }
-            });
+           FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new DriverExistance() {
+               @Override
+               public void onSearchComplete(boolean isFound) {
+                   if(isFound) {
+                       SignIn.this.finish();
+                       startActivity(new Intent(SignIn.this, MainActivity.class));
+                   }
+                   else
+                   {
+                       FirebaseAuth.getInstance().signOut();
+                   }
+               }
+           });
         }
 
+
         setContentView(R.layout.activity_sign_in);
-
-
 
         mAuth = FirebaseAuth.getInstance();
         mEmail = (EditText) findViewById(R.id.email_login);
@@ -75,17 +70,20 @@ public class SignIn extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful())
                         {
+                            Log.e("TAGKEY","Sign In With Email Is Successful");
                             FirebaseHandler.checkIfDriverExist(email, new DriverExistance() {
                                 @Override
                                 public void onSearchComplete(boolean isFound) {
                                     if(isFound)
                                     {
+                                        Log.e("TAGKEY","Driver Exists");
                                         Toast.makeText(SignIn.this,"Logged In",Toast.LENGTH_SHORT).show();
                                         SignIn.this.finish();
                                         startActivity(new Intent(SignIn.this,MainActivity.class));
                                     }
                                     else
                                     {
+                                        Log.e("TAGKEY","Driver Does Not Exist, GO TO COMPLETE PROFILE");
                                         Toast.makeText(SignIn.this,"Complete Your Profile",Toast.LENGTH_LONG).show();
                                         SignIn.this.finish();
                                         startActivity(new Intent(SignIn.this,CompleteProfile.class));
@@ -95,6 +93,7 @@ public class SignIn extends AppCompatActivity {
                         }
                         else
                         {
+                            Log.e("TAGKEY","FAILED TO SIGN IN");
                             Toast.makeText(SignIn.this,"Failed to Login",Toast.LENGTH_SHORT).show();
                         }
                         mProgressDialog.dismiss();
@@ -102,5 +101,11 @@ public class SignIn extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
     }
 }

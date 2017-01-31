@@ -11,6 +11,35 @@ public class Driver {
     private String driverName;
     private String plateChars;
     private String plateNums;
+    private String phoneNumber;
+
+    private String LatPosition;
+    private String LongPosition;
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getLatPosition() {
+        return LatPosition;
+    }
+
+    public String getLongPosition() {
+        return LongPosition;
+    }
+
+    public void setLatPosition(String latPosition) {
+
+        LatPosition = latPosition;
+    }
+
+    public void setLongPosition(String longPosition) {
+        LongPosition = longPosition;
+    }
 
     public void setDriverEmail(String driverEmail) {
         this.driverEmail = driverEmail;

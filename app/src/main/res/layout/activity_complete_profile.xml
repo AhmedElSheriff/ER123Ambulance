@@ -43,7 +43,7 @@
                 android:paddingRight="16dp">
 
 
-                <com.example.android.er123ambulance.MyEditText
+                <EditText
                     android:id="@+id/driver_name_complete_profile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -94,7 +94,7 @@
                         android:layout_weight="1">
 
 
-                        <com.example.android.er123ambulance.MyEditText
+                        <EditText
                             android:id="@+id/plate_chars_complete_profile"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -110,7 +110,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1">
 
-                        <com.example.android.er123ambulance.MyEditText
+                        <EditText
                             android:id="@+id/plate_num_complete_profile"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -136,14 +136,46 @@
                 android:paddingRight="16dp">
 
 
-                <com.example.android.er123ambulance.MyEditText
-                    android:id="@+id/driver_phone_number_complete_profile"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Phone Number"
-                    android:textSize="12sp"
-                    android:inputType="textEmailAddress"
-                    android:textStyle="bold" />
+                    android:layout_weight="3"
+                    android:orientation="horizontal"
+                    >
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        >
+
+                        <Spinner
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/international_code_spinner"
+                            />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        >
+                        <EditText
+                            android:id="@+id/driver_phone_number_complete_profile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Phone Number"
+                            android:textSize="12sp"
+                            android:inputType="phone"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+
+
+                </LinearLayout>
+
 
 
             </android.support.design.widget.TextInputLayout>

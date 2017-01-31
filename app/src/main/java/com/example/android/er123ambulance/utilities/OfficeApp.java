@@ -31,12 +31,9 @@ public class OfficeApp {
 
         if(!hasBeenInitialized) {
             FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setApiKey("AIzaSyD_uP0uvHY6SCz9yQUZmx8Kbc7uF7vGgp0")
                     .setApplicationId("er-123-office")
                     .setDatabaseUrl("https://er-123-office.firebaseio.com")
                     .build();
-
-
              officeApp = FirebaseApp.initializeApp(context, options, "Office App");
 
             return officeApp;
