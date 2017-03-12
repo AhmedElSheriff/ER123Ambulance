@@ -70,6 +70,8 @@ public class CompleteProfile extends AppCompatActivity {
                 mDriver.setPhoneNumber(mPhoneNum.getText().toString());
                 mDriver.setLatPosition("null");
                 mDriver.setLongPosition("null");
+                mDriver.setDistance(0f);
+                mDriver.setDriverAvailable("false");
 
                 Log.e("TAGKEY","Complete Profile Click Listener");
 

@@ -36,6 +36,68 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722790888303:android:3902d38b228899f5",
+        "android_client_info": {
+          "package_name": "com.example.android.er123office"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "722790888303-4j5s4po6ms7vgph7p2pj3tdf6qhrpn62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdQFL-bx3cK5x22kAnEvcSO92rN8rCAWA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722790888303:android:8747c79ed59e248c",
+        "android_client_info": {
+          "package_name": "com.example.android.graduationdemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "722790888303-4j5s4po6ms7vgph7p2pj3tdf6qhrpn62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdQFL-bx3cK5x22kAnEvcSO92rN8rCAWA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"

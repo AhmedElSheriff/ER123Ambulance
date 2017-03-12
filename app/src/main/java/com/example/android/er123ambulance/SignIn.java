@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.android.er123ambulance.callbacks.DriverExistance;
+import com.example.android.er123ambulance.callbacks.CheckExistance;
 import com.example.android.er123ambulance.firebase.FirebaseHandler;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -36,7 +36,7 @@ public class SignIn extends AppCompatActivity {
 
         if(FirebaseAuth.getInstance().getCurrentUser() != null)
         {
-           FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new DriverExistance() {
+           FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new CheckExistance() {
                @Override
                public void onSearchComplete(boolean isFound) {
                    if(isFound) {
@@ -71,7 +71,7 @@ public class SignIn extends AppCompatActivity {
                         if(task.isSuccessful())
                         {
                             Log.e("TAGKEY","Sign In With Email Is Successful");
-                            FirebaseHandler.checkIfDriverExist(email, new DriverExistance() {
+                            FirebaseHandler.checkIfDriverExist(email, new CheckExistance() {
                                 @Override
                                 public void onSearchComplete(boolean isFound) {
                                     if(isFound)

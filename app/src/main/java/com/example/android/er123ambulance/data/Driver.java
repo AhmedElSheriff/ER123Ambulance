@@ -12,9 +12,19 @@ public class Driver {
     private String plateChars;
     private String plateNums;
     private String phoneNumber;
+    private Float distance;
 
     private String LatPosition;
     private String LongPosition;
+    private String driverAvailable;
+
+    public void setDriverAvailable(String driverAvailable) {
+        this.driverAvailable = driverAvailable;
+    }
+
+    public String getDriverAvailable() {
+        return driverAvailable;
+    }
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
@@ -22,6 +32,14 @@ public class Driver {
 
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+
+    public void setDistance(Float distance) {
+        this.distance = distance;
+    }
+
+    public Float getDistance() {
+        return distance;
     }
 
     public String getLatPosition() {
