@@ -32,7 +32,9 @@ public class FirebaseHandler {
         Log.e("TAGKEY","Check If Driver Exist Handler");
         String email = driverEmail.substring(0,driverEmail.indexOf("@"));
         final String emailNode = email.replace(".","");
-        FirebaseHelper.getDatabase().getReference()/*.child("DriverDatabase")*/.child("allDrivers").addListenerForSingleValueEvent(new ValueEventListener() {
+        Log.e("TAGKEY","Email Node" + emailNode);
+        FirebaseHelper.getDatabase().getReference("allDrivers")/*.child("DriverDatabase").child("allDrivers")*/
+                .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot child:dataSnapshot.getChildren())
@@ -124,7 +126,7 @@ public class FirebaseHandler {
         String mEmail = email.substring(0,email.indexOf("@"));
         final String emailNode = mEmail.replace(".","");
 
-        FirebaseHelper.getDatabase().getReference().child("DriverRequests").child(emailNode).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getDatabase().getReference().child("Requests").child(emailNode).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 PendingRequests request = dataSnapshot.getValue(PendingRequests.class);
@@ -146,7 +148,7 @@ public class FirebaseHandler {
     {
         String mEmail = email.substring(0,email.indexOf("@"));
         final String emailNode = mEmail.replace(".","");
-        FirebaseHelper.getDatabase().getReference().child("DriverRequests").child(emailNode).removeValue();
+        FirebaseHelper.getDatabase().getReference().child("Requests").child(emailNode).removeValue();
     }
 
     public static void checkIfPatientExist(String email, final CheckExistance listener)
@@ -154,7 +156,7 @@ public class FirebaseHandler {
     {
         String mEmail = email.substring(0,email.indexOf("@"));
         final String emailNode = mEmail.replace(".","");
-        FirebaseHelper.getDatabase().getReference()./*child("DriverDatabase").*/child("DriverRequests").child(emailNode).addValueEventListener(new ValueEventListener() {
+        FirebaseHelper.getDatabase().getReference()./*child("DriverDatabase").*/child("Requests").child(emailNode).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 PendingRequests requests = dataSnapshot.getValue(PendingRequests.class);

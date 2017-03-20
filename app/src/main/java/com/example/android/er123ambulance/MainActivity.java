@@ -28,6 +28,7 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.example.android.er123ambulance.callbacks.CheckExistance;
 import com.example.android.er123ambulance.callbacks.GetDriverData;
+import com.example.android.er123ambulance.callbacks.GetPatientData;
 import com.example.android.er123ambulance.data.Driver;
 import com.example.android.er123ambulance.data.PendingRequests;
 import com.example.android.er123ambulance.firebase.FirebaseHandler;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker yourLoc = null;
     private PendingRequests mRequest;
     private Button arrivalButton;
+    Location location1 = new Location("");
 
 
     @Override
@@ -291,7 +293,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            });
 
            // LatLng target = new LatLng(Double.parseDouble(mRequest.getLatPosition()),Double.parseDouble(mRequest.getLongPosition()));
-            LatLng target = new LatLng(29.9887649,30.9422747);
+
+            FirebaseHandler.getPatientLocation(mDriver.getDriverEmail(), new GetPatientData() {
+                @Override
+                public void getDriverData(PendingRequests request) {
+                    location1.setLatitude(Double.parseDouble(request.getLatPosition()));
+                    location1.setLongitude(Double.parseDouble(request.getLongPosition()));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(location1.getLatitude(), location1.getLongitude())).title("Patient: ")
+                            .icon(patient));
+//                                        location1.setLatitude(29.9887649);
+//                                        location1.setLongitude(30.9422747);
+                }
+            });
+
+
+            LatLng target = new LatLng(location1.getLatitude(),location1.getLongitude());
             GoogleDirection.withServerKey(getString(R.string.google_maps_key))
                     .from(currentLatLng)
                     .to(target)
@@ -305,11 +321,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 ,5, Color.RED);
                                 final Polyline polyline = mMap.addPolyline(polylineOptions);
                                 Log.e("Direction :", "Direction Success");
-                                Location location1 = new Location("");
-                                location1.setLatitude(29.9887649);
-                                location1.setLongitude(30.9422747);
-                                mMap.addMarker(new MarkerOptions().position(new LatLng(location1.getLatitude(), location1.getLongitude())).title("Patient: ")
-                                        .icon(patient));
+
+
+
+
                                 Log.e("Distance :", Float.toString(location.distanceTo(location1)));
                                 if(location.distanceTo(location1) <= 300)
                                 {
@@ -323,7 +338,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 }
                             }
                             else
-                                Log.e("Direction :", direction.getErrorMessage());
+                            {
+                                
+                            }
+                              //  Log.e("Direction :", direction.getErrorMessage());
                         }
 
                         @Override

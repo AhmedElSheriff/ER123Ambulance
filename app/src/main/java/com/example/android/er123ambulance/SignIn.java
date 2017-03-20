@@ -34,22 +34,22 @@ public class SignIn extends AppCompatActivity {
         mProgressDialog.setMessage("Please Wait");
         mProgressDialog.setCancelable(false);
 
-        if(FirebaseAuth.getInstance().getCurrentUser() != null)
-        {
-           FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new CheckExistance() {
-               @Override
-               public void onSearchComplete(boolean isFound) {
-                   if(isFound) {
-                       SignIn.this.finish();
-                       startActivity(new Intent(SignIn.this, MainActivity.class));
-                   }
-                   else
-                   {
-                       FirebaseAuth.getInstance().signOut();
-                   }
-               }
-           });
-        }
+//        if(FirebaseAuth.getInstance().getCurrentUser() != null)
+//        {
+//           FirebaseHandler.checkIfDriverExist(FirebaseAuth.getInstance().getCurrentUser().getEmail(), new CheckExistance() {
+//               @Override
+//               public void onSearchComplete(boolean isFound) {
+//                   if(isFound) {
+//                       SignIn.this.finish();
+//                       startActivity(new Intent(SignIn.this, MainActivity.class));
+//                   }
+//                   else
+//                   {
+//                       FirebaseAuth.getInstance().signOut();
+//                   }
+//               }
+//           });
+//        }
 
 
         setContentView(R.layout.activity_sign_in);
