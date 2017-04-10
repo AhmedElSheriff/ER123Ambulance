@@ -27,6 +27,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:orientation="vertical"
+                android:id="@+id/edit_area"
                 android:layout_height="wrap_content">
 
 
@@ -73,18 +74,23 @@
 
 
             </LinearLayout>
-
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/login_btn"
-                android:background="#de562a"
-                android:layout_margin="16dp"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                android:text="Log in"/>
-
+            
+                <com.dd.CircularProgressButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/circleloginbtn"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginLeft="34dp"
+                    android:layout_marginRight="34dp"
+                    android:textAllCaps="false"
+                    app:cpb_cornerRadius="48dp"
+                    app:cpb_iconComplete="@drawable/ic_action_accept"
+                    app:cpb_iconError="@drawable/ic_action_cancel"
+                    app:cpb_textIdle="Log in"
+                    android:textColor="#ffffff"
+                    app:cpb_selectorIdle="@drawable/state_selector"
+                    />
 
 
             <ProgressBar

@@ -1,15 +1,12 @@
-package com.example.android.er123ambulance;
+package com.example.android.er123ambulance.controller;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -26,14 +23,15 @@ import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.example.android.er123ambulance.R;
 import com.example.android.er123ambulance.callbacks.CheckExistance;
 import com.example.android.er123ambulance.callbacks.GetDriverData;
 import com.example.android.er123ambulance.callbacks.GetPatientData;
 import com.example.android.er123ambulance.data.Driver;
 import com.example.android.er123ambulance.data.PendingRequests;
 import com.example.android.er123ambulance.firebase.FirebaseHandler;
+import com.example.android.er123ambulance.services.LocationService;
 import com.example.android.er123ambulance.utilities.Locations;
-import com.example.android.er123ambulance.utilities.OfficeApp;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,7 +45,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -58,6 +55,8 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.util.ArrayList;
 
+import de.greenrobot.event.EventBus;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GetDriverData {
 
     private GoogleMap mMap;
@@ -65,14 +64,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private AccountHeader header;
     private Drawer result;
     private ProgressDialog mProgressDialog;
-    private LocationManager mLocationManager;
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private static final int REQUEST_LOCATION = 0x2;
     private Driver mDriver;
     private Marker yourLoc = null;
-    private PendingRequests mRequest;
     private Button arrivalButton;
-    Location location1 = new Location("");
+    private Location patientLocation;
+    private Polyline polyline;
+    private boolean polyLineFlag = false;
 
 
     @Override
@@ -93,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("ER 123");
         mProfile = new ProfileDrawerItem();
 
         FirebaseHandler.getDriverInfo(FirebaseAuth.getInstance().getCurrentUser().getEmail(), this);
@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         result.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
+        Log.e("TAGKEY2","Try Get Location");
 
         try {
             getLocation();
@@ -141,14 +142,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (off == 0) {
             Locations.displayLocationSettingsRequest(this, MainActivity.this);
         } else {
+            Log.e("TAGKEY2","Before Request Location");
             requestLocation();
+
         }
 
     }
 
     private void requestLocation() {
+        Log.e("TAGKEY2","Inside Request Location");
 
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
@@ -157,8 +160,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
 
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, mLocationListener);
-        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0, mLocationListener);
+        startService(new Intent(MainActivity.this, LocationService.class));
+
 
     }
 
@@ -202,14 +205,113 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
+        Log.e("TAGKEY2","Inside onMapReady");
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         UiSettings uiSettings = mMap.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
-
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(29.9556449,30.9134569),16.0f));
+        EventBus.getDefault().register(this);
     }
 
+    public void onEvent(Location currenLocation) {
+        final Location driverLocation = new Location("");
+        patientLocation = new Location("");
+        Double mLatitude = currenLocation.getLatitude();
+        Double mLongitude = currenLocation.getLongitude();
+        driverLocation.setLatitude(mLatitude);
+        driverLocation.setLongitude(mLongitude);
+        final BitmapDescriptor patient = BitmapDescriptorFactory.fromResource(R.drawable.patient);
+        BitmapDescriptor vehicle = BitmapDescriptorFactory.fromResource(R.drawable.goodambulance2);
+        if(yourLoc != null)
+            {
+                Log.e("TAGKEY2","yourLoc != null");
+                yourLoc.remove();
+                yourLoc = null;
+            }
+
+
+            if(yourLoc == null) {
+                Log.e("TAGKEY2","yourLoc == null");
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLatitude,mLongitude), 16.0f));
+                yourLoc = mMap.addMarker(new MarkerOptions().position(new LatLng(driverLocation.getLatitude(), driverLocation.getLongitude())).title(mDriver.getPlateChars() +" " + mDriver.getPlateNums())
+                        .icon(vehicle));
+            }
+
+        FirebaseHandler.getPatientLocation(mDriver.getDriverEmail(), new GetPatientData() {
+            @Override
+            public void getDriverData(PendingRequests request) {
+                patientLocation.setLatitude(Double.parseDouble(request.getLatPosition()));
+                patientLocation.setLongitude(Double.parseDouble(request.getLongPosition()));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(patientLocation.getLatitude(), patientLocation.getLongitude())).title("Patient: ")
+                        .icon(patient));
+                drawRoute(driverLocation,patientLocation);
+            }
+        });
+
+
+
+    }
+
+    private void drawRoute(final Location driverLocation, final Location patientLocation)
+    {
+        if(polyLineFlag)
+        {
+            Log.e("TAGKEY2","Removing Polyline");
+            polyline.remove();
+        }
+
+        Log.e("TAGKEY2","Inside drawRoute");
+        LatLng target = new LatLng(patientLocation.getLatitude(),patientLocation.getLongitude());
+            GoogleDirection.withServerKey(getString(R.string.google_maps_key))
+                    .from(new LatLng(driverLocation.getLatitude(),driverLocation.getLongitude()))
+                    .to(target)
+                    .execute(new DirectionCallback() {
+                        @Override
+                        public void onDirectionSuccess(Direction direction, String rawBody) {
+                            Log.e("TAGKEY2","Inside onDirectionSuccess");
+
+                            if(direction.isOK()) {
+                                Log.e("TAGKEY2","Inside onDirectionSuccess2");
+
+                                Leg leg = direction.getRouteList().get(0).getLegList().get(0);
+                                ArrayList<LatLng> directionPositionsList = leg.getDirectionPoint();
+                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(MainActivity.this, directionPositionsList
+                                ,5, Color.RED);
+                                polyline = mMap.addPolyline(polylineOptions);
+                                polyLineFlag = true;
+                                Log.e("Direction :", "Direction Success");
+
+
+
+
+                                Log.e("Distance :", Float.toString(driverLocation.distanceTo(patientLocation)));
+                                if(driverLocation.distanceTo(patientLocation) <= 300)
+                                {
+                                    arrivalButton.setVisibility(View.VISIBLE);
+                                    arrivalButton.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            polyline.remove();
+                                        }
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                Log.e("TAGKEY2","Direction not ok" + direction.getErrorMessage());
+
+                            }
+                        }
+
+                        @Override
+                        public void onDirectionFailure(Throwable t) {
+                            Log.e("TAGKEY2","Inside onDirectionFailure");
+
+                            Log.e("Direction :", "Failed :" + t.getLocalizedMessage());
+                        }
+                    });
+
+    }
     @Override
     public void getDriverData(Driver driver) {
 
@@ -233,7 +335,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
     }
 
     @Override
@@ -246,124 +347,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onDestroy() {
         super.onDestroy();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             return;
         }
-        mLocationManager.removeUpdates(mLocationListener);
-         mLocationListener = null;
+        stopService(new Intent(this,LocationService.class));
+        EventBus.getDefault().unregister(this);
     }
 
-    LocationListener mLocationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(final Location location) {
-            Log.e("OnLocationListener","True");
-
-            final BitmapDescriptor patient = BitmapDescriptorFactory.fromResource(R.drawable.patient);
-            BitmapDescriptor vehicle = BitmapDescriptorFactory.fromResource(R.drawable.goodambulance);
-            final LatLng currentLatLng = new LatLng(location.getLatitude(),location.getLongitude());
-            if(yourLoc != null)
-            {
-                yourLoc.remove();
-                yourLoc = null;
-            }
-
-
-            if(yourLoc == null) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16.0f));
-                yourLoc = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title(mDriver.getPlateChars() +" " + mDriver.getPlateNums())
-                        .icon(vehicle));
-            }
-            mDriver.setLatPosition(Double.toString(location.getLatitude()));
-            mDriver.setLongPosition(Double.toString(location.getLongitude()));
-
-            FirebaseHandler.sendDriverLocationToBackOffice(mDriver,Double.toString(location.getLatitude()),
-                    Double.toString(location.getLongitude()),FirebaseDatabase.getInstance(OfficeApp.officeApp(MainActivity.this)));
-//            FirebaseHandler.getPatientLocation(mDriver.getDriverEmail(), new GetPatientData() {
-//                @Override
-//                public void getDriverData(PendingRequests requests) {
-//                     mRequest = requests;
-//                }
-//            });
-
-           // LatLng target = new LatLng(Double.parseDouble(mRequest.getLatPosition()),Double.parseDouble(mRequest.getLongPosition()));
-
-            FirebaseHandler.getPatientLocation(mDriver.getDriverEmail(), new GetPatientData() {
-                @Override
-                public void getDriverData(PendingRequests request) {
-                    location1.setLatitude(Double.parseDouble(request.getLatPosition()));
-                    location1.setLongitude(Double.parseDouble(request.getLongPosition()));
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(location1.getLatitude(), location1.getLongitude())).title("Patient: ")
-                            .icon(patient));
-//                                        location1.setLatitude(29.9887649);
-//                                        location1.setLongitude(30.9422747);
-                }
-            });
-
-
-            LatLng target = new LatLng(location1.getLatitude(),location1.getLongitude());
-            GoogleDirection.withServerKey(getString(R.string.google_maps_key))
-                    .from(currentLatLng)
-                    .to(target)
-                    .execute(new DirectionCallback() {
-                        @Override
-                        public void onDirectionSuccess(Direction direction, String rawBody) {
-                            if(direction.isOK()) {
-                                Leg leg = direction.getRouteList().get(0).getLegList().get(0);
-                                ArrayList<LatLng> directionPositionsList = leg.getDirectionPoint();
-                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(MainActivity.this, directionPositionsList
-                                ,5, Color.RED);
-                                final Polyline polyline = mMap.addPolyline(polylineOptions);
-                                Log.e("Direction :", "Direction Success");
-
-
-
-
-                                Log.e("Distance :", Float.toString(location.distanceTo(location1)));
-                                if(location.distanceTo(location1) <= 300)
-                                {
-                                    arrivalButton.setVisibility(View.VISIBLE);
-                                    arrivalButton.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            polyline.remove();
-                                        }
-                                    });
-                                }
-                            }
-                            else
-                            {
-                                
-                            }
-                              //  Log.e("Direction :", direction.getErrorMessage());
-                        }
-
-                        @Override
-                        public void onDirectionFailure(Throwable t) {
-                            Log.e("Direction :", "Failed :" + t.getLocalizedMessage());
-                        }
-                    });
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
 }

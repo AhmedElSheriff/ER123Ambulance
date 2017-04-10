@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ER 123 Ambulance</string>
+    <string name="app_name">EED Unit</string>
     <string name="google_maps_key">AIzaSyCyp4zt6ZfObfUJ2tB27sjaQ3A1sRw19MQ</string>
     <string name="title_activity_sign_in">SignIn</string>
     <string name="title_activity_sign_up">SignUp</string>
